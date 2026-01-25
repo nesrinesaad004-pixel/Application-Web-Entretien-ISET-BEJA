@@ -58,7 +58,7 @@ const scenarios = [
     multipleAnswers: true,
   },
   {
-    id: 'q5',
+    id: 'q5', 
     question: 'Que faites-vous si vous ne comprenez pas une consigne donnée par votre supérieur ?',
     options: [
       { id: 'a', label: 'Je commence directement le développement en interprétant comme je peux.', isCorrect: false },
