@@ -89,13 +89,13 @@ export default function Level3Page() {
   };
 
   const handleContinue = () => {
-    const totalScore = isCorrect ? 20 : -20;
+    const totalScore = isCorrect ? 20 : 0; // ✅ 20 ou 0 (pas de négatif)
     completeLevel(3, totalScore);
 
     if (isCorrect) {
-      toast.success(`Excellent ! Vous avez obtenu +20/20 points au niveau 3.`);
+      toast.success(`Excellent ! Vous avez obtenu ${totalScore}/20 points au niveau 3.`);
     } else {
-      toast.warning(`Vous avez obtenu -20/20 points au niveau 3. Révisez la structure d'un mail professionnel !`);
+      toast.warning(`Vous avez obtenu ${totalScore}/20 points au niveau 3. Révisez la structure d'un mail professionnel !`);
     }
 
     navigate('/niveau-4');
