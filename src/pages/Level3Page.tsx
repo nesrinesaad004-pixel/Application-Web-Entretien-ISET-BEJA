@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LevelHeader } from '@/components/game/LevelHeader';
 import { ProgressBar } from '@/components/game/ProgressBar';
 import { GameTimer } from '@/components/game/GameTimer';
-import { ArrowRight, Mail, Volume2, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Mail, Volume2, CheckCircle2, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -18,7 +18,7 @@ const mailBlocks = [
 
 export default function Level3Page() {
   const navigate = useNavigate();
-  const { completeLevel } = useGame();
+  const { gameState, setLevel3Order, completeLevel } = useGame();
   
   const [blocks, setBlocks] = useState(() => 
     [...mailBlocks].sort(() => Math.random() - 0.5)
@@ -26,6 +26,8 @@ export default function Level3Page() {
   const [isCorrect, setIsCorrect] = useState(false);
   const [hasValidated, setHasValidated] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioFinished, setAudioFinished] = useState(false);
+  const [wantsToListen, setWantsToListen] = useState(false);
 
   // Prevent back navigation
   useEffect(() => {
@@ -37,6 +39,7 @@ export default function Level3Page() {
     
     window.history.pushState(null, '', window.location.pathname);
     window.addEventListener('popstate', handlePopState);
+    
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
@@ -62,11 +65,12 @@ export default function Level3Page() {
     const correct = checkOrder();
     setIsCorrect(correct);
     setHasValidated(true);
+    setLevel3Order(blocks.map(b => b.id));
 
     if (correct) {
       toast.success('Bravo ! Votre réponse est claire et professionnelle !');
     } else {
-      toast.error('L\'ordre n\'est pas correct. La bonne réponse vous est affichée ci-dessous.');
+      toast.error('L\'ordre n\'est pas correct. Réessayez !');
     }
   };
 
@@ -79,11 +83,26 @@ export default function Level3Page() {
     
     utterance.onend = () => {
       setIsPlaying(false);
+      setAudioFinished(true);
     };
 
     speechSynthesis.speak(utterance);
   };
 
+  const handleRetry = () => {
+    setBlocks([...mailBlocks].sort(() => Math.random() - 0.5));
+    setHasValidated(false);
+    setIsCorrect(false);
+  };
+
+  const handleListenToggle = () => {
+    if (!wantsToListen) {
+      setWantsToListen(true);
+      playAudio();
+    }
+  };
+
+  // 🔥 NOUVELLE FONCTION : Ajout du scoring
   const handleContinue = () => {
     const totalScore = isCorrect ? 20 : 0;
     completeLevel(3, totalScore);
@@ -103,7 +122,9 @@ export default function Level3Page() {
         {/* Progress and Timer */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex-1">
+           <div className="flex-1">
             <ProgressBar currentLevel={3} completedLevels={[]} />
+          </div>
           </div>
           <div className="ml-4">
             <GameTimer />
@@ -163,10 +184,15 @@ export default function Level3Page() {
                     : "border-border bg-background"
                 )}
               >
+                {/* Position number */}
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold">
                   {index + 1}
                 </div>
+                
+                {/* Block content */}
                 <p className="flex-1 text-foreground text-sm md:text-base">{block.content}</p>
+                
+                {/* Up/Down buttons (always visible for mobile) */}
                 {!hasValidated && (
                   <div className="flex flex-col gap-1">
                     <button
@@ -202,6 +228,31 @@ export default function Level3Page() {
           </div>
         </div>
 
+        {/* Audio Option (when correct) */}
+        {hasValidated && isCorrect && (
+          <div className="flex items-center justify-center gap-4 mb-6 animate-fade-in">
+            {!wantsToListen ? (
+              <Button variant="outline" size="lg" onClick={handleListenToggle} className="gap-2">
+                <Volume2 className="h-5 w-5" />
+                Écouter mon mail
+              </Button>
+            ) : (
+              <div className={cn(
+                "flex items-center gap-3 px-6 py-3 rounded-full",
+                isPlaying ? "bg-primary/10" : "bg-muted"
+              )}>
+                <Volume2 className={cn(
+                  "h-5 w-5",
+                  isPlaying ? "text-primary animate-pulse" : "text-muted-foreground"
+                )} />
+                <span className="text-sm font-medium">
+                  {isPlaying ? "Lecture en cours..." : "Lecture terminée"}
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Validation / Actions */}
         <div className="flex flex-col items-center gap-4">
           {!hasValidated && (
@@ -211,46 +262,39 @@ export default function Level3Page() {
             </Button>
           )}
 
-          {hasValidated && (
-            <>
-              {/* 🔥 Affichage de la bonne réponse (toujours visible) */}
-              <div className="mt-6 p-4 bg-muted rounded-xl w-full max-w-2xl">
-                <p className="font-medium text-muted-foreground mb-3">Bonne réponse :</p>
-                <div className="space-y-2">
-                  {mailBlocks.map((block, index) => (
-                    <div 
-                      key={block.id} 
-                      className="p-3 rounded-lg bg-background border"
-                    >
-                      <span className="text-xs font-bold text-muted-foreground mr-2">
-                        {index + 1}.
-                      </span>
-                      {block.content}
-                    </div>
-                  ))}
-                </div>
+          {hasValidated && !isCorrect && (
+            <div className="text-center">
+              <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-4 mb-4">
+                <p className="text-destructive font-medium">
+                  L'ordre du mail n'est pas correct. Pensez à la structure : salutation, corps du message, formule de politesse.
+                </p>
               </div>
+              <Button size="lg" variant="outline" onClick={handleRetry}>
+                Réessayer
+              </Button>
+            </div>
+          )}
 
-              {/* 🔈 Bouton audio (SEULEMENT si correct) */}
-              {isCorrect && (
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <Button variant="outline" size="lg" onClick={playAudio} className="gap-2">
-                    <Volume2 className="h-5 w-5" />
-                    {isPlaying ? "Lecture en cours..." : "Écouter mon mail"}
-                  </Button>
+          {hasValidated && isCorrect && (
+            <div className="text-center">
+              <div className="bg-success/10 border border-success/20 rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <CheckCircle2 className="h-5 w-5 text-success" />
+                  <p className="text-success font-semibold">Excellent travail !</p>
                 </div>
-              )}
-
-              {/* Bouton unique */}
+                <p className="text-success/80">
+                  Votre réponse est claire, professionnelle et bien formulée.
+                </p>
+              </div>
               <Button
                 size="lg"
-                variant={isCorrect ? "success" : "default"}
+                variant="success"
                 onClick={handleContinue}
               >
                 Passer au niveau suivant
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </>
+            </div>
           )}
         </div>
       </div>
