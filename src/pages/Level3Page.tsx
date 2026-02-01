@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { LevelHeader } from '@/components/game/LevelHeader';
 import { ProgressBar } from '@/components/game/ProgressBar';
 import { GameTimer } from '@/components/game/GameTimer';
-import { ArrowRight, Mail, Volume2, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Mail, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 const mailBlocks = [
   { id: 'salutation', content: 'Chère Madame Fatma,', order: 1 },
@@ -25,7 +26,7 @@ export default function Level3Page() {
   );
   const [isCorrect, setIsCorrect] = useState(false);
   const [hasValidated, setHasValidated] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
+  const [isPlayingAndNavigating, setIsPlayingAndNavigating] = useState(false);
 
   // Prevent back navigation
   useEffect(() => {
@@ -70,31 +71,39 @@ export default function Level3Page() {
     }
   };
 
-  const playAudio = () => {
-    setIsPlaying(true);
-    const fullText = blocks.map(b => b.content).join(' ');
-    const utterance = new SpeechSynthesisUtterance(fullText);
-    utterance.lang = 'fr-FR';
-    utterance.rate = 0.9;
-    
-    utterance.onend = () => {
-      setIsPlaying(false);
-    };
-
-    speechSynthesis.speak(utterance);
-  };
-
   const handleContinue = () => {
     const totalScore = isCorrect ? 20 : 0;
     completeLevel(3, totalScore);
 
-    if (totalScore === 20) {
+    if (isCorrect) {
       toast.success(`Excellent ! Vous avez obtenu ${totalScore}/20 points au niveau 3.`);
-    } else {
-      toast.warning(`Vous avez obtenu ${totalScore}/20 points au niveau 3. Révisez la structure d'un mail professionnel !`);
-    }
+      
+      // 🔥 Lance l'audio SEULEMENT si correct
+      setIsPlayingAndNavigating(true);
+      
+      const fullText = blocks.map(b => b.content).join(' ');
+      const utterance = new SpeechSynthesisUtterance(fullText);
+      utterance.lang = 'fr-FR';
+      utterance.rate = 0.9;
 
-    navigate('/niveau-4');
+      utterance.onend = () => {
+        navigate('/niveau-4');
+      };
+
+      utterance.onerror = () => {
+        setTimeout(() => navigate('/niveau-4'), 1500);
+      };
+
+      speechSynthesis.speak(utterance);
+    } else {
+      // ❌ Pas d'audio si faux
+      toast.warning(`Vous avez obtenu ${totalScore}/20 points au niveau 3.`);
+      
+      // ➡️ Passe directement au niveau 4
+      setTimeout(() => {
+        navigate('/niveau-4');
+      }, 1500);
+    }
   };
 
   return (
@@ -148,7 +157,7 @@ export default function Level3Page() {
           </p>
         </div>
 
-        {/* Blocks with Up/Down buttons (mobile-friendly) */}
+        {/* Blocks with Up/Down buttons */}
         <div className="bg-card border-2 border-dashed border-border rounded-2xl p-4 md:p-6 mb-8 animate-fade-in" style={{ animationDelay: '400ms' }}>
           <div className="space-y-3">
             {blocks.map((block, index) => (
@@ -213,7 +222,7 @@ export default function Level3Page() {
 
           {hasValidated && (
             <>
-              {/* 🔥 Affichage de la bonne réponse (toujours visible) */}
+              {/* 🔥 Bonne réponse toujours affichée */}
               <div className="mt-6 p-4 bg-muted rounded-xl w-full max-w-2xl">
                 <p className="font-medium text-muted-foreground mb-3">Bonne réponse :</p>
                 <div className="space-y-2">
@@ -231,25 +240,23 @@ export default function Level3Page() {
                 </div>
               </div>
 
-              {/* 🔈 Bouton audio (SEULEMENT si correct) */}
-              {isCorrect && (
-                <div className="flex items-center justify-center gap-4 mb-4">
-                  <Button variant="outline" size="lg" onClick={playAudio} className="gap-2">
-                    <Volume2 className="h-5 w-5" />
-                    {isPlaying ? "Lecture en cours..." : "Écouter mon mail"}
-                  </Button>
+              {/* Bouton unique avec gestion audio conditionnelle */}
+              {isCorrect && isPlayingAndNavigating ? (
+                <div className="flex flex-col items-center gap-2 mt-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <p className="text-sm text-muted-foreground">😊 Lecture en cours…</p>
                 </div>
+              ) : (
+                <Button 
+                  size="lg" 
+                  variant={isCorrect ? "success" : "default"}
+                  onClick={handleContinue}
+                  className="mt-4"
+                >
+                  Passer au niveau suivant
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
               )}
-
-              {/* Bouton unique */}
-              <Button
-                size="lg"
-                variant={isCorrect ? "success" : "default"}
-                onClick={handleContinue}
-              >
-                Passer au niveau suivant
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
             </>
           )}
         </div>
