@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LevelHeader } from '@/components/game/LevelHeader';
 import { ProgressBar } from '@/components/game/ProgressBar';
 import { GameTimer } from '@/components/game/GameTimer';
-import { ArrowRight, Mail, Volume2 } from 'lucide-react';
+import { ArrowRight, Mail, Volume2, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -71,21 +71,16 @@ export default function Level3Page() {
   };
 
   const playAudio = () => {
-    // Vérifie si l'API SpeechSynthesis est disponible
-    if (!('speechSynthesis' in window)) {
-      toast.info("La lecture audio n'est pas prise en charge sur cet appareil.");
-      return;
-    }
-
+    setIsPlaying(true);
     const fullText = blocks.map(b => b.content).join(' ');
     const utterance = new SpeechSynthesisUtterance(fullText);
     utterance.lang = 'fr-FR';
     utterance.rate = 0.9;
     
-    utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = () => setIsPlaying(false);
+    utterance.onend = () => {
+      setIsPlaying(false);
+    };
 
-    setIsPlaying(true);
     speechSynthesis.speak(utterance);
   };
 
@@ -218,7 +213,7 @@ export default function Level3Page() {
 
           {hasValidated && (
             <>
-              {/* 🔥 Bonne réponse toujours affichée */}
+              {/* 🔥 Affichage de la bonne réponse (toujours visible) */}
               <div className="mt-6 p-4 bg-muted rounded-xl w-full max-w-2xl">
                 <p className="font-medium text-muted-foreground mb-3">Bonne réponse :</p>
                 <div className="space-y-2">
@@ -236,7 +231,7 @@ export default function Level3Page() {
                 </div>
               </div>
 
-              {/* 🔈 Bouton audio SEULEMENT si correct */}
+              {/* 🔈 Bouton audio (SEULEMENT si correct) */}
               {isCorrect && (
                 <div className="flex items-center justify-center gap-4 mb-4">
                   <Button variant="outline" size="lg" onClick={playAudio} className="gap-2">
@@ -246,7 +241,7 @@ export default function Level3Page() {
                 </div>
               )}
 
-              {/* ➡️ Bouton "Passer" TOUJOURS présent */}
+              {/* Bouton unique */}
               <Button
                 size="lg"
                 variant={isCorrect ? "success" : "default"}
