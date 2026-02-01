@@ -71,7 +71,7 @@ export default function Level3Page() {
   };
 
   const playAudio = () => {
-    // Vérifie si l'API est disponible
+    // Vérifie si l'API SpeechSynthesis est disponible
     if (!('speechSynthesis' in window)) {
       toast.info("La lecture audio n'est pas prise en charge sur cet appareil.");
       return;
@@ -83,10 +83,7 @@ export default function Level3Page() {
     utterance.rate = 0.9;
     
     utterance.onend = () => setIsPlaying(false);
-    utterance.onerror = () => {
-      setIsPlaying(false);
-      toast.info("Lecture terminée.");
-    };
+    utterance.onerror = () => setIsPlaying(false);
 
     setIsPlaying(true);
     speechSynthesis.speak(utterance);
