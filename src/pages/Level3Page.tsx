@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LevelHeader } from '@/components/game/LevelHeader';
 import { ProgressBar } from '@/components/game/ProgressBar';
 import { GameTimer } from '@/components/game/GameTimer';
-import { ArrowRight, Mail, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowRight, Mail, ArrowUp, ArrowDown, Volume2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
@@ -26,7 +26,7 @@ export default function Level3Page() {
   );
   const [isCorrect, setIsCorrect] = useState(false);
   const [hasValidated, setHasValidated] = useState(false);
-  const [isPlayingAndNavigating, setIsPlayingAndNavigating] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Prevent back navigation
   useEffect(() => {
@@ -71,37 +71,35 @@ export default function Level3Page() {
     }
   };
 
+  const playAudio = () => {
+    if (!('speechSynthesis' in window)) {
+      toast.info("La lecture audio n'est pas prise en charge sur cet appareil.");
+      return;
+    }
+
+    const fullText = blocks.map(b => b.content).join(' ');
+    const utterance = new SpeechSynthesisUtterance(fullText);
+    utterance.lang = 'fr-FR';
+    utterance.rate = 0.9;
+    
+    utterance.onend = () => setIsPlaying(false);
+    utterance.onerror = () => setIsPlaying(false);
+
+    setIsPlaying(true);
+    speechSynthesis.speak(utterance);
+  };
+
   const handleContinue = () => {
     const totalScore = isCorrect ? 20 : 0;
     completeLevel(3, totalScore);
 
     if (isCorrect) {
-      // 🔥 Lance l'audio SEULEMENT si correct
-      setIsPlayingAndNavigating(true);
-      
-      const fullText = blocks.map(b => b.content).join(' ');
-      const utterance = new SpeechSynthesisUtterance(fullText);
-      utterance.lang = 'fr-FR';
-      utterance.rate = 0.9;
-
-      utterance.onend = () => {
-        navigate('/niveau-4');
-      };
-
-      utterance.onerror = () => {
-        setTimeout(() => navigate('/niveau-4'), 1500);
-      };
-
-      speechSynthesis.speak(utterance);
+      toast.success(`Excellent ! Vous avez obtenu ${totalScore}/20 points au niveau 3.`);
     } else {
-      // ❌ Pas d'audio si faux
       toast.warning(`Vous avez obtenu ${totalScore}/20 points au niveau 3.`);
-      
-      // ➡️ Passe directement au niveau 4 après 1.5s
-      setTimeout(() => {
-        navigate('/niveau-4');
-      }, 1500);
     }
+
+    navigate('/niveau-4');
   };
 
   return (
@@ -238,19 +236,20 @@ export default function Level3Page() {
                 </div>
               </div>
 
-              {/* Bouton unique avec gestion audio conditionnelle */}
-              {isCorrect && isPlayingAndNavigating ? (
-                <div className="flex flex-col items-center gap-2 mt-4">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">😊 Lecture en cours…</p>
+              {/* Deux boutons si correct, un seul si incorrect */}
+              {isCorrect ? (
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                  <Button variant="outline" size="lg" onClick={playAudio} className="gap-2">
+                    <Volume2 className="h-5 w-5" />
+                    {isPlaying ? "Lecture en cours..." : "Écouter mon mail"}
+                  </Button>
+                  <Button size="lg" variant="success" onClick={handleContinue}>
+                    Passer au niveau suivant
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Button>
                 </div>
               ) : (
-                <Button 
-                  size="lg" 
-                  variant={isCorrect ? "success" : "default"}
-                  onClick={handleContinue}
-                  className="mt-4"
-                >
+                <Button size="lg" variant="default" onClick={handleContinue} className="mt-4">
                   Passer au niveau suivant
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
