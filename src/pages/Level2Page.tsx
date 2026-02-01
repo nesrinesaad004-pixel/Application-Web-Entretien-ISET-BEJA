@@ -205,7 +205,6 @@ export default function Level2Page() {
               </Button>
             </div>
           )}
-
           {hasValidated && isCorrect && (
             <div className="text-center">
               <div className="bg-success/10 border border-success/20 rounded-xl p-4 mb-4">
