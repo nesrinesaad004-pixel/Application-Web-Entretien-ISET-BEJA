@@ -11,7 +11,7 @@ import { ArrowRight, MessageCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
-// Questions du PDF - avec réponses multiples possibles
+// ✅ 8 questions 
 const scenarios = [
   {
     id: 'q1',
@@ -42,7 +42,7 @@ const scenarios = [
       { id: 'a', label: 'Je lui dis que je suis débordé et qu\'il a qu\'à se débrouiller tout seul.', isCorrect: false },
       { id: 'b', label: 'Je regarde rapidement son problème et je lui indique où chercher ou je bloque 15-20 min plus tard dans la journée pour l\'aider.', isCorrect: true },
       { id: 'c', label: 'Je l\'aide immédiatement en mettant mon propre travail de côté, même si ça me met en retard.', isCorrect: false },
-      { id: 'd', label: " Je lui dis d'attendre que le chef le remarque puis je décide de l’aider .", isCorrect: false },
+      { id: 'd', label: "Je lui dis d'attendre que le chef le remarque puis je décide de l’aider.", isCorrect: false },
     ],
     multipleAnswers: false,
   },
@@ -58,13 +58,48 @@ const scenarios = [
     multipleAnswers: true,
   },
   {
-    id: 'q5', 
+    id: 'q5',
     question: 'Que faites-vous si vous ne comprenez pas une consigne donnée par votre supérieur ?',
     options: [
       { id: 'a', label: 'Je commence directement le développement en interprétant comme je peux.', isCorrect: false },
       { id: 'b', label: 'Je pose immédiatement des questions pour clarifier les attentes et je reformule avec mes mots pour valider ma compréhension.', isCorrect: true },
       { id: 'c', label: 'Je fais exactement ce qu\'il a dit même si ça me semble bizarre, « c\'est le chef qui décide ».', isCorrect: false },
       { id: 'd', label: 'Je délègue la tâche à un autre stagiaire pour ne pas prendre de risque.', isCorrect: false },
+    ],
+    multipleAnswers: false,
+  },
+  {
+    id: 'q6',
+    question: 'Vous envisagez plusieurs sujets de Projet de Fin d’Études. Comment procédez-vous pour faire un choix pertinent avant de démarrer votre stage chez nous ?',
+    options: [
+      { id: 'a', label: 'Je compare les sujets en fonction de mes compétences actuelles, de ce que je peux apprendre et du temps disponible pour le PFE.', isCorrect: true },
+      { id: 'b', label: ' Je choisis le sujet qui paraît le plus impressionnant, même si je ne le maîtrise pas encore', isCorrect: false },
+      { id: 'c', label: ' Je prends le même sujet que mes camarades pour éviter les difficultés.', isCorrect: false },
+      { id: 'd', label: 'J’échange avec mon encadrant afin d’évaluer la faisabilité du sujet et son intérêt professionne.', isCorrect: true },
+      { id: 'e', label: '  Je choisis rapidement un sujet pour aller plus vite, sans analyse approfondie..', isCorrect: false },
+    ],
+    multipleAnswers: false,
+  },
+  {
+    id: 'q7',
+    question: 'Quels critères prenez-vous en compte pour juger qu’un sujet de PFE est pertinent et intéressant pour un stage en entreprise ?',
+    options: [
+      { id: 'a', label: 'L’adéquation du sujet avec ma spécialité et mon projet professionnel.', isCorrect: true },
+      { id: 'b', label:  'Le fait que le sujet soit très à la mode, même si je ne le maîtrise pas bien.', isCorrect: false },
+      { id: 'c', label: ' La faisabilité du sujet dans le temps imparti du PF', isCorrect: true },
+      { id: 'd', label: ' Le nombre d’étudiants ayant déjà choisi le même sujet.', isCorrect: false },
+       { id: 'e', label: '  La possibilité de valoriser ce sujet lors d’un entretien ou sur mon CV..', isCorrect: true },
+    ],
+    multipleAnswers: false,
+  },
+  {
+    id: 'q8',
+    question: 'Dans le cadre de votre Projet de Fin d’Études, comment envisagez-vous l’utilisation de l’intelligence artificielle',
+    options: [
+      { id: 'a', label: 'L’IA réalisera la majorité du travail technique à ma place', isCorrect: false },
+      { id: 'b', label: ' Je préfère ne pas utiliser l’IA pour éviter tout risque', isCorrect: false },
+      { id: 'c', label: ' J’utilise l’IA comme outil d’aide à la réflexion et à la recherche, tout en restant responsable de mon travai', isCorrect: true },
+      { id: 'd', label: 'Je travaille seul et je n’intègre ni l’IA ni les recommandations de mon encadrant. .', isCorrect: false },
     ],
     multipleAnswers: false,
   },
@@ -78,7 +113,6 @@ export default function Level5Page() {
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
   const [hasValidated, setHasValidated] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
-  // 🔥 Stocke le résultat de chaque question (true/false)
   const [questionResults, setQuestionResults] = useState<boolean[]>([]);
 
   const scenario = scenarios[currentScenario];
@@ -94,7 +128,6 @@ export default function Level5Page() {
     
     window.history.pushState(null, '', window.location.pathname);
     window.addEventListener('popstate', handlePopState);
-    
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
@@ -126,14 +159,13 @@ export default function Level5Page() {
       selectedSet.size === correctSet.size && 
       [...selectedSet].every(id => correctSet.has(id));
 
-    setHasValidated(true);
     setIsCorrect(isAnswerCorrect);
+    setHasValidated(true);
 
     if (isAnswerCorrect) {
-      toast.success('Bonne réponse ! +4 points');
+      toast.success('Bonne réponse ! +2.5 points');
     } else {
-      // 🔥 Pas de révélation des bonnes réponses
-      toast.error('Mauvaise réponse. Réessayez la prochaine fois !');
+      toast.error('Mauvaise réponse.');
     }
   };
 
@@ -143,16 +175,16 @@ export default function Level5Page() {
     setQuestionResults(newResults);
 
     if (isLastScenario) {
-      // 🔥 Calcule le score total : 4 points par bonne réponse
+      // ✅ Score final : 2.5 × nombre de bonnes réponses
       const totalCorrect = newResults.filter(Boolean).length;
-      const totalScore = totalCorrect * 4; // 0, 4, 8, 12, 16 ou 20
+      const totalScore = totalCorrect * 2.5; // 0 → 20
 
       completeLevel(5, totalScore);
 
-      // 🔥 Affiche le score final
+      // 🔔 Feedback final
       if (totalScore === 20) {
         toast.success(`Félicitations ! Vous avez obtenu ${totalScore}/20 points au niveau 5.`);
-      } else if (totalScore >= 12) {
+      } else if (totalScore >= 12.5) {
         toast.info(`Bon travail ! Vous avez obtenu ${totalScore}/20 points au niveau 5.`);
       } else {
         toast.warning(`Vous avez obtenu ${totalScore}/20 points au niveau 5. Révisez vos réflexes professionnels !`);
@@ -184,8 +216,8 @@ export default function Level5Page() {
         {/* Level Header */}
         <LevelHeader
           levelNumber={5}
-          title="Gestion de Crise"
-          objective="L'équipe de recrutement vous met à l'épreuve avec des situations réalistes. Répondez à 5 QCM qui testent votre logique professionnelle."
+          title="Répondre efficacement"
+          objective="L'équipe de recrutement vous met à l'épreuve avec des situations réalistes. Répondez à 8 QCM qui testent votre logique professionnelle."
         />
 
         {/* Scenario Progress */}
@@ -254,6 +286,23 @@ export default function Level5Page() {
           </div>
         </div>
 
+        {/* ✅ Affiche la bonne réponse SEULEMENT si faux */}
+        {hasValidated && !isCorrect && (
+          <div className="mt-6 p-4 bg-muted rounded-xl">
+            <p className="font-medium text-muted-foreground mb-3">Bonne(s) réponse(s) :</p>
+            <div className="space-y-2">
+              {scenario.options
+                .filter(o => o.isCorrect)
+                .map(option => (
+                  <div key={option.id} className="flex items-center gap-2">
+                    <span className="text-green-600">✓</span>
+                    <span className="text-foreground">{option.label}</span>
+                  </div>
+                ))}
+            </div>
+          </div>
+        )}
+
         {/* Actions */}
         <div className="flex flex-col items-center gap-4">
           {!hasValidated && (
@@ -264,7 +313,7 @@ export default function Level5Page() {
           )}
 
           {hasValidated && (
-            <Button size="lg" variant={isCorrect ? "success" : "destructive"} onClick={handleNext}>
+            <Button size="lg" variant={isCorrect ? "success" : "default"} onClick={handleNext}>
               {isLastScenario ? "Passer à l'auto-évaluation" : "Question suivante"}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
