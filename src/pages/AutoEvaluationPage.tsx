@@ -25,8 +25,7 @@ export default function AutoEvaluationPage() {
     { id: 'investigation', label: "L'Investigation" },
     { id: 'bilan', label: 'Le Bilan de Soi' },
     { id: 'invitation', label: "L'Invitation" },
-    { id: 'entretien', label: "L'Entretien" },
-    { id: 'crise', label: 'La Gestion de Crise' },
+    { id: 'entretien', labe:"Répondre efficacement" },
      { id: 'Aucun', label: 'Aucun' },
   ];
 
@@ -171,7 +170,7 @@ export default function AutoEvaluationPage() {
 
           {/* Difficultés */}
           <div>
-            <p className="text-sm text-muted-foreground mb-3">Quel est le niveau qui vous a semblé le plus difficile?</p>
+            <p className="text-sm text-muted-foreground mb-3">Quel est le niveau qui vous a semblé le plus difficile ?</p>
             <div className="space-y-2">
               {difficultyOptions.map((option) => (
                 <div
