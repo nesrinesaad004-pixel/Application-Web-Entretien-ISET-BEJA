@@ -7,11 +7,11 @@ interface ProgressBarProps {
 }
 
 const levels = [
-  { level: 1, title: "Se connaître" },
-  { level: 2, title: "Rechercher l'entreprise" },
-  { level: 3, title: "Communiquer" },
-  { level: 4, title: "Se présenter" },
-  { level: 5, title: "Réagir" },
+  { level: 1, title: "" },
+  { level: 2, title: "" },
+  { level: 3, title: "" },
+  { level: 4, title: "" },
+  { level: 5, title: "" },
 ];
 
 export function ProgressBar({ currentLevel, completedLevels }: ProgressBarProps) {
@@ -42,15 +42,7 @@ export function ProgressBar({ currentLevel, completedLevels }: ProgressBarProps)
         </div>
       </div>
 
-      {/* Current level info */}
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
-          Niveau {currentLevel} sur {levels.length}
-        </p>
-        <p className="text-lg font-display font-semibold text-foreground mt-1">
-          {levels.find(l => l.level === currentLevel)?.title || "Terminé"}
-        </p>
-      </div>
+      
     </div>
   );
 }
